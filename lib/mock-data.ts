@@ -11,7 +11,7 @@ export const mockDevices: DeviceData[] = [
     pir: 1,
     in2: 0,
     dist: 153,
-    timestamp: "2024-10-15T18:05:37.316075Z",
+    timestamp: "2025-10-15T18:05:37.316075Z",
   },
   {
     device: "A2:B3:C4:D5:E6:F7",
@@ -23,7 +23,7 @@ export const mockDevices: DeviceData[] = [
     pir: 0,
     in2: 1,
     dist: 287,
-    timestamp: "2024-10-15T19:12:45.521034Z",
+    timestamp: "2025-10-15T19:12:45.521034Z",
   },
   {
     device: "1C:2D:3E:4F:5A:6B",
@@ -35,7 +35,7 @@ export const mockDevices: DeviceData[] = [
     pir: 1,
     in2: 1,
     dist: 95,
-    timestamp: "2024-10-16T08:33:12.789456Z",
+    timestamp: "2025-10-16T08:33:12.789456Z",
   },
   {
     device: "7D:8E:9F:0A:1B:2C",
@@ -47,7 +47,7 @@ export const mockDevices: DeviceData[] = [
     pir: 0,
     in2: 0,
     dist: 412,
-    timestamp: "2024-10-16T14:47:28.654321Z",
+    timestamp: "2025-10-16T14:47:28.654321Z",
   },
   {
     device: "B8:C9:D0:E1:F2:A3",
@@ -59,7 +59,7 @@ export const mockDevices: DeviceData[] = [
     pir: 1,
     in2: 0,
     dist: 221,
-    timestamp: "2024-10-17T09:58:53.123987Z",
+    timestamp: "2025-10-17T09:58:53.123987Z",
   },
   {
     device: "F0:F5:BD:89:D1:A0",
@@ -71,7 +71,7 @@ export const mockDevices: DeviceData[] = [
     pir: 0,
     in2: 1,
     dist: 200,
-    timestamp: "2024-10-18T12:30:00.000000Z",
+    timestamp: "2025-10-18T12:30:00.000000Z",
   },
   {
     device: "A2:B3:C4:D5:E6:F7",
@@ -83,7 +83,7 @@ export const mockDevices: DeviceData[] = [
     pir: 1,
     in2: 0,
     dist: 150,
-    timestamp: "2024-10-19T16:45:30.000000Z",
+    timestamp: "2025-10-19T16:45:30.000000Z",
   },
   {
     device: "1C:2D:3E:4F:5A:6B",
@@ -95,7 +95,7 @@ export const mockDevices: DeviceData[] = [
     pir: 0,
     in2: 1,
     dist: 180,
-    timestamp: "2024-10-20T10:15:45.000000Z",
+    timestamp: "2025-10-20T10:15:45.000000Z",
   },
   {
     device: "7D:8E:9F:0A:1B:2C",
@@ -107,6 +107,6 @@ export const mockDevices: DeviceData[] = [
     pir: 1,
     in2: 0,
     dist: 220,
-    timestamp: "2024-10-21T14:22:10.000000Z",
+    timestamp: "2025-10-21T14:22:10.000000Z",
   },
 ]
