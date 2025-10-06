@@ -48,15 +48,54 @@ function TimePicker({ id, value, onChange, className }: TimePickerProps) {
     onChange(time24)
   }
 
+  // Generate hours (1-12) and minutes (00-59)
+  const hours = Array.from({ length: 12 }, (_, i) => i + 1)
+  const minutes = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'))
+  
+  const [selectedHour, selectedMinute] = time ? time.split(':') : ['12', '00']
+
+  const handleHourChange = (hour: string) => {
+    const newTime = `${hour}:${selectedMinute}`
+    handleTimeChange(newTime)
+  }
+
+  const handleMinuteChange = (minute: string) => {
+    const newTime = `${selectedHour}:${minute}`
+    handleTimeChange(newTime)
+  }
+
   return (
     <div className="flex gap-2">
-      <Input
-        id={id}
-        type="time"
-        value={time}
-        onChange={(e) => handleTimeChange(e.target.value)}
-        className={`bg-secondary ${className}`}
-      />
+      <div className="flex gap-1">
+        <Select value={selectedHour} onValueChange={handleHourChange}>
+          <SelectTrigger className="w-16 bg-secondary">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {hours.map(hour => (
+              <SelectItem key={hour} value={hour.toString()}>
+                {hour}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        
+        <span className="flex items-center text-muted-foreground">:</span>
+        
+        <Select value={selectedMinute} onValueChange={handleMinuteChange}>
+          <SelectTrigger className="w-16 bg-secondary">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {minutes.map(minute => (
+              <SelectItem key={minute} value={minute}>
+                {minute}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      
       <Select value={period} onValueChange={handlePeriodChange}>
         <SelectTrigger className="w-20 bg-secondary">
           <SelectValue />
