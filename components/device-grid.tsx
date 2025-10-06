@@ -23,7 +23,13 @@ export function DeviceGrid() {
   const filteredDevices = useMemo(() => {
     let filtered = mockDevices
 
+    console.log('=== FILTERING START ===')
     console.log('Filtering with:', { selectedDevice, dateFrom, timeFrom, dateTo, timeTo })
+    console.log('Available devices and their times:')
+    mockDevices.forEach(device => {
+      const deviceDate = new Date(device.timestamp)
+      console.log(`- ${device.device}: ${device.timestamp} (UTC: ${deviceDate.getUTCHours()}:${deviceDate.getUTCMinutes().toString().padStart(2, '0')})`)
+    })
 
     // Filter by device
     if (selectedDevice !== "all") {
@@ -54,7 +60,9 @@ export function DeviceGrid() {
           const [hours, minutes] = timeFrom.split(':').map(Number)
           const deviceTime = deviceDate.getUTCHours() * 60 + deviceDate.getUTCMinutes()
           const filterTime = hours * 60 + minutes
-          console.log('Filter FROM (time only):', filterTime, 'Device UTC:', deviceTime, 'Passes:', deviceTime >= filterTime)
+          const deviceTimeStr = `${deviceDate.getUTCHours().toString().padStart(2, '0')}:${deviceDate.getUTCMinutes().toString().padStart(2, '0')}`
+          const filterTimeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
+          console.log(`Filter FROM (time only): ${filterTimeStr} vs Device UTC: ${deviceTimeStr} (${filterTime} vs ${deviceTime}) - Passes: ${deviceTime >= filterTime}`)
           passesFrom = deviceTime >= filterTime
         }
       }
@@ -77,7 +85,9 @@ export function DeviceGrid() {
           const [hours, minutes] = timeTo.split(':').map(Number)
           const deviceTime = deviceDate.getUTCHours() * 60 + deviceDate.getUTCMinutes()
           const filterTime = hours * 60 + minutes
-          console.log('Filter TO (time only):', filterTime, 'Device UTC:', deviceTime, 'Passes:', deviceTime <= filterTime)
+          const deviceTimeStr = `${deviceDate.getUTCHours().toString().padStart(2, '0')}:${deviceDate.getUTCMinutes().toString().padStart(2, '0')}`
+          const filterTimeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
+          console.log(`Filter TO (time only): ${filterTimeStr} vs Device UTC: ${deviceTimeStr} (${filterTime} vs ${deviceTime}) - Passes: ${deviceTime <= filterTime}`)
           passesTo = deviceTime <= filterTime
         }
       }
@@ -87,7 +97,9 @@ export function DeviceGrid() {
       return passes
     })
 
+    console.log('=== FILTERING END ===')
     console.log('Final filtered devices:', filtered.length)
+    console.log('Filtered devices:', filtered.map(d => `${d.device} (${d.timestamp})`))
     return filtered
   }, [selectedDevice, dateFrom, dateTo, timeFrom, timeTo])
 
