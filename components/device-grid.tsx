@@ -28,7 +28,11 @@ export function DeviceGrid() {
     console.log('Available devices and their times:')
     mockDevices.forEach(device => {
       const deviceDate = new Date(device.timestamp)
-      console.log(`- ${device.device}: ${device.timestamp} (Local: ${deviceDate.getHours()}:${deviceDate.getMinutes().toString().padStart(2, '0')})`)
+      const localTime = `${deviceDate.getHours()}:${deviceDate.getMinutes().toString().padStart(2, '0')}`
+      const ampm = deviceDate.getHours() >= 12 ? 'PM' : 'AM'
+      const hours12 = deviceDate.getHours() === 0 ? 12 : deviceDate.getHours() > 12 ? deviceDate.getHours() - 12 : deviceDate.getHours()
+      const displayTime = `${hours12}:${deviceDate.getMinutes().toString().padStart(2, '0')} ${ampm}`
+      console.log(`- ${device.device}: ${device.timestamp} (Local: ${localTime} / ${displayTime})`)
     })
 
     // Filter by device
@@ -40,19 +44,27 @@ export function DeviceGrid() {
     // Filter by date and time range
     filtered = filtered.filter((device) => {
       const deviceDate = new Date(device.timestamp)
-      console.log('Checking device:', device.device, 'timestamp:', device.timestamp, 'deviceDate:', deviceDate, 'Local time:', deviceDate.getHours() + ':' + deviceDate.getMinutes().toString().padStart(2, '0'))
+      const localTime = `${deviceDate.getHours()}:${deviceDate.getMinutes().toString().padStart(2, '0')}`
+      const ampm = deviceDate.getHours() >= 12 ? 'PM' : 'AM'
+      const hours12 = deviceDate.getHours() === 0 ? 12 : deviceDate.getHours() > 12 ? deviceDate.getHours() - 12 : deviceDate.getHours()
+      const displayTime = `${hours12}:${deviceDate.getMinutes().toString().padStart(2, '0')} ${ampm}`
+      console.log('Checking device:', device.device, 'timestamp:', device.timestamp, 'deviceDate:', deviceDate, 'Local time:', localTime, 'Display:', displayTime)
       
       // Check FROM filters
       let passesFrom = true
       if (dateFrom || timeFrom) {
         if (dateFrom && timeFrom) {
           // Both date and time specified - create exact datetime in local time
-          const filterFromDate = new Date(dateFrom + 'T' + timeFrom + ':00')
-          console.log('Filter FROM (date+time):', filterFromDate, 'Device:', deviceDate, 'Passes:', deviceDate >= filterFromDate)
+          const filterFromDate = new Date(dateFrom + 'T' + timeFrom + ':00.000')
+          const filterTime = `${filterFromDate.getHours()}:${filterFromDate.getMinutes().toString().padStart(2, '0')}`
+          const filterAmpm = filterFromDate.getHours() >= 12 ? 'PM' : 'AM'
+          const filterHours12 = filterFromDate.getHours() === 0 ? 12 : filterFromDate.getHours() > 12 ? filterFromDate.getHours() - 12 : filterFromDate.getHours()
+          const filterDisplayTime = `${filterHours12}:${filterFromDate.getMinutes().toString().padStart(2, '0')} ${filterAmpm}`
+          console.log('Filter FROM (date+time):', filterFromDate, `(${filterTime} / ${filterDisplayTime})`, 'Device:', deviceDate, 'Passes:', deviceDate >= filterFromDate)
           passesFrom = deviceDate >= filterFromDate
         } else if (dateFrom) {
           // Only date specified - check if device date is >= filter date (any time)
-          const filterFromDate = new Date(dateFrom + 'T00:00:00')
+          const filterFromDate = new Date(dateFrom + 'T00:00:00.000')
           console.log('Filter FROM (date only):', filterFromDate, 'Device:', deviceDate, 'Passes:', deviceDate >= filterFromDate)
           passesFrom = deviceDate >= filterFromDate
         } else if (timeFrom) {
@@ -68,7 +80,11 @@ export function DeviceGrid() {
         if (dateTo && timeTo) {
           // Both date and time specified - create exact datetime in local time
           const filterToDate = new Date(dateTo + 'T' + timeTo + ':59.999')
-          console.log('Filter TO (date+time):', filterToDate, 'Device:', deviceDate, 'Passes:', deviceDate <= filterToDate)
+          const filterTime = `${filterToDate.getHours()}:${filterToDate.getMinutes().toString().padStart(2, '0')}`
+          const filterAmpm = filterToDate.getHours() >= 12 ? 'PM' : 'AM'
+          const filterHours12 = filterToDate.getHours() === 0 ? 12 : filterToDate.getHours() > 12 ? filterToDate.getHours() - 12 : filterToDate.getHours()
+          const filterDisplayTime = `${filterHours12}:${filterToDate.getMinutes().toString().padStart(2, '0')} ${filterAmpm}`
+          console.log('Filter TO (date+time):', filterToDate, `(${filterTime} / ${filterDisplayTime})`, 'Device:', deviceDate, 'Passes:', deviceDate <= filterToDate)
           passesTo = deviceDate <= filterToDate
         } else if (dateTo) {
           // Only date specified - check if device date is <= filter date (any time)
