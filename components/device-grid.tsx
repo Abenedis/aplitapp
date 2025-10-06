@@ -34,7 +34,7 @@ export function DeviceGrid() {
     // Filter by date and time range
     filtered = filtered.filter((device) => {
       const deviceDate = new Date(device.timestamp)
-      console.log('Checking device:', device.device, 'timestamp:', device.timestamp, 'deviceDate:', deviceDate)
+      console.log('Checking device:', device.device, 'timestamp:', device.timestamp, 'deviceDate:', deviceDate, 'UTC time:', deviceDate.getUTCHours() + ':' + deviceDate.getUTCMinutes())
       
       // Check FROM filters
       let passesFrom = true
@@ -52,9 +52,9 @@ export function DeviceGrid() {
         } else if (timeFrom) {
           // Only time specified - check if device time is >= filter time (any date)
           const [hours, minutes] = timeFrom.split(':').map(Number)
-          const deviceTime = deviceDate.getHours() * 60 + deviceDate.getMinutes()
+          const deviceTime = deviceDate.getUTCHours() * 60 + deviceDate.getUTCMinutes()
           const filterTime = hours * 60 + minutes
-          console.log('Filter FROM (time only):', filterTime, 'Device:', deviceTime, 'Passes:', deviceTime >= filterTime)
+          console.log('Filter FROM (time only):', filterTime, 'Device UTC:', deviceTime, 'Passes:', deviceTime >= filterTime)
           passesFrom = deviceTime >= filterTime
         }
       }
@@ -75,9 +75,9 @@ export function DeviceGrid() {
         } else if (timeTo) {
           // Only time specified - check if device time is <= filter time (any date)
           const [hours, minutes] = timeTo.split(':').map(Number)
-          const deviceTime = deviceDate.getHours() * 60 + deviceDate.getMinutes()
+          const deviceTime = deviceDate.getUTCHours() * 60 + deviceDate.getUTCMinutes()
           const filterTime = hours * 60 + minutes
-          console.log('Filter TO (time only):', filterTime, 'Device:', deviceTime, 'Passes:', deviceTime <= filterTime)
+          console.log('Filter TO (time only):', filterTime, 'Device UTC:', deviceTime, 'Passes:', deviceTime <= filterTime)
           passesTo = deviceTime <= filterTime
         }
       }
