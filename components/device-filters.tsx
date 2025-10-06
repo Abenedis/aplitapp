@@ -12,6 +12,10 @@ interface DeviceFiltersProps {
   onDateFromChange: (value: string) => void
   dateTo: string
   onDateToChange: (value: string) => void
+  timeFrom: string
+  onTimeFromChange: (value: string) => void
+  timeTo: string
+  onTimeToChange: (value: string) => void
   devices: DeviceData[]
 }
 
@@ -22,13 +26,17 @@ export function DeviceFilters({
   onDateFromChange,
   dateTo,
   onDateToChange,
+  timeFrom,
+  onTimeFromChange,
+  timeTo,
+  onTimeToChange,
   devices,
 }: DeviceFiltersProps) {
   const uniqueDevices = Array.from(new Set(devices.map((d) => d.device)))
 
   return (
     <div className="rounded-lg border border-border bg-card p-6">
-      <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         <div className="space-y-2">
           <Label htmlFor="device-select" className="text-sm font-medium text-foreground">
             Device MAC Address
@@ -54,9 +62,22 @@ export function DeviceFilters({
           </Label>
           <Input
             id="date-from"
-            type="datetime-local"
+            type="date"
             value={dateFrom}
             onChange={(e) => onDateFromChange(e.target.value)}
+            className="bg-secondary"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="time-from" className="text-sm font-medium text-foreground">
+            Time From
+          </Label>
+          <Input
+            id="time-from"
+            type="time"
+            value={timeFrom}
+            onChange={(e) => onTimeFromChange(e.target.value)}
             className="bg-secondary"
           />
         </div>
@@ -67,9 +88,22 @@ export function DeviceFilters({
           </Label>
           <Input
             id="date-to"
-            type="datetime-local"
+            type="date"
             value={dateTo}
             onChange={(e) => onDateToChange(e.target.value)}
+            className="bg-secondary"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="time-to" className="text-sm font-medium text-foreground">
+            Time To
+          </Label>
+          <Input
+            id="time-to"
+            type="time"
+            value={timeTo}
+            onChange={(e) => onTimeToChange(e.target.value)}
             className="bg-secondary"
           />
         </div>

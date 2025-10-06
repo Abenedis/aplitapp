@@ -9,6 +9,8 @@ export function DeviceGrid() {
   const [selectedDevice, setSelectedDevice] = useState<string>("all")
   const [dateFrom, setDateFrom] = useState<string>("")
   const [dateTo, setDateTo] = useState<string>("")
+  const [timeFrom, setTimeFrom] = useState<string>("")
+  const [timeTo, setTimeTo] = useState<string>("")
 
   const filteredDevices = useMemo(() => {
     let filtered = mockDevices
@@ -18,16 +20,37 @@ export function DeviceGrid() {
       filtered = filtered.filter((device) => device.device === selectedDevice)
     }
 
-    // Filter by date range
-    if (dateFrom) {
-      filtered = filtered.filter((device) => new Date(device.timestamp) >= new Date(dateFrom))
+    // Filter by date and time range
+    if (dateFrom || timeFrom) {
+      const filterFromDate = dateFrom ? new Date(dateFrom) : new Date('1900-01-01')
+      const filterFromTime = timeFrom ? timeFrom : '00:00'
+      
+      // Combine date and time for filtering
+      const [hours, minutes] = filterFromTime.split(':').map(Number)
+      filterFromDate.setHours(hours, minutes, 0, 0)
+      
+      filtered = filtered.filter((device) => {
+        const deviceDate = new Date(device.timestamp)
+        return deviceDate >= filterFromDate
+      })
     }
-    if (dateTo) {
-      filtered = filtered.filter((device) => new Date(device.timestamp) <= new Date(dateTo))
+    
+    if (dateTo || timeTo) {
+      const filterToDate = dateTo ? new Date(dateTo) : new Date('2100-12-31')
+      const filterToTime = timeTo ? timeTo : '23:59'
+      
+      // Combine date and time for filtering
+      const [hours, minutes] = filterToTime.split(':').map(Number)
+      filterToDate.setHours(hours, minutes, 59, 999)
+      
+      filtered = filtered.filter((device) => {
+        const deviceDate = new Date(device.timestamp)
+        return deviceDate <= filterToDate
+      })
     }
 
     return filtered
-  }, [selectedDevice, dateFrom, dateTo])
+  }, [selectedDevice, dateFrom, dateTo, timeFrom, timeTo])
 
   return (
     <div className="space-y-6">
@@ -38,6 +61,10 @@ export function DeviceGrid() {
         onDateFromChange={setDateFrom}
         dateTo={dateTo}
         onDateToChange={setDateTo}
+        timeFrom={timeFrom}
+        onTimeFromChange={setTimeFrom}
+        timeTo={timeTo}
+        onTimeToChange={setTimeTo}
         devices={mockDevices}
       />
 
