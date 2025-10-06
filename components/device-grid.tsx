@@ -56,14 +56,9 @@ export function DeviceGrid() {
           console.log('Filter FROM (date only):', filterFromDate, 'Device:', deviceDate, 'Passes:', deviceDate >= filterFromDate)
           passesFrom = deviceDate >= filterFromDate
         } else if (timeFrom) {
-          // Only time specified - check if device time is >= filter time (any date)
-          const [hours, minutes] = timeFrom.split(':').map(Number)
-          const deviceTime = deviceDate.getHours() * 60 + deviceDate.getMinutes()
-          const filterTime = hours * 60 + minutes
-          const deviceTimeStr = `${deviceDate.getHours().toString().padStart(2, '0')}:${deviceDate.getMinutes().toString().padStart(2, '0')}`
-          const filterTimeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
-          console.log(`Filter FROM (time only): ${filterTimeStr} vs Device Local: ${deviceTimeStr} (${filterTime} vs ${deviceTime}) - Passes: ${deviceTime >= filterTime}`)
-          passesFrom = deviceTime >= filterTime
+          // Only time specified - ignore this filter (time without date is not meaningful)
+          console.log('Filter FROM (time only): Ignored - time filter requires date')
+          passesFrom = true
         }
       }
       
@@ -81,14 +76,9 @@ export function DeviceGrid() {
           console.log('Filter TO (date only):', filterToDate, 'Device:', deviceDate, 'Passes:', deviceDate <= filterToDate)
           passesTo = deviceDate <= filterToDate
         } else if (timeTo) {
-          // Only time specified - check if device time is <= filter time (any date)
-          const [hours, minutes] = timeTo.split(':').map(Number)
-          const deviceTime = deviceDate.getHours() * 60 + deviceDate.getMinutes()
-          const filterTime = hours * 60 + minutes
-          const deviceTimeStr = `${deviceDate.getHours().toString().padStart(2, '0')}:${deviceDate.getMinutes().toString().padStart(2, '0')}`
-          const filterTimeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
-          console.log(`Filter TO (time only): ${filterTimeStr} vs Device Local: ${deviceTimeStr} (${filterTime} vs ${deviceTime}) - Passes: ${deviceTime <= filterTime}`)
-          passesTo = deviceTime <= filterTime
+          // Only time specified - ignore this filter (time without date is not meaningful)
+          console.log('Filter TO (time only): Ignored - time filter requires date')
+          passesTo = true
         }
       }
       
