@@ -36,7 +36,7 @@ export function DeviceFilters({
 
   return (
     <div className="rounded-lg border border-border bg-card p-6">
-      <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="device-select" className="text-sm font-medium text-foreground">
             Device MAC Address
@@ -56,56 +56,62 @@ export function DeviceFilters({
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="date-from" className="text-sm font-medium text-foreground">
-            Date From
-          </Label>
-          <Input
-            id="date-from"
-            type="date"
-            value={dateFrom}
-            onChange={(e) => onDateFromChange(e.target.value)}
-            className="bg-secondary"
-          />
-        </div>
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="date-from" className="text-sm font-medium text-foreground">
+                Date From
+              </Label>
+              <Input
+                id="date-from"
+                type="date"
+                value={dateFrom}
+                onChange={(e) => onDateFromChange(e.target.value)}
+                className="bg-secondary"
+              />
+            </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="time-from" className="text-sm font-medium text-foreground">
-            Time From
-          </Label>
-          <Input
-            id="time-from"
-            type="time"
-            value={timeFrom}
-            onChange={(e) => onTimeFromChange(e.target.value)}
-            className="bg-secondary"
-          />
-        </div>
+            <div className="space-y-2">
+              <Label htmlFor="time-from" className="text-sm font-medium text-foreground">
+                Time From
+              </Label>
+              <Input
+                id="time-from"
+                type="time"
+                value={timeFrom}
+                onChange={(e) => onTimeFromChange(e.target.value)}
+                className="bg-secondary"
+              />
+            </div>
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="date-to" className="text-sm font-medium text-foreground">
-            Date To
-          </Label>
-          <Input
-            id="date-to"
-            type="date"
-            value={dateTo}
-            onChange={(e) => onDateToChange(e.target.value)}
-            className="bg-secondary"
-          />
-        </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="date-to" className="text-sm font-medium text-foreground">
+                Date To
+              </Label>
+              <Input
+                id="date-to"
+                type="date"
+                value={dateTo}
+                onChange={(e) => onDateToChange(e.target.value)}
+                className="bg-secondary"
+              />
+            </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="time-to" className="text-sm font-medium text-foreground">
-            Time To
-          </Label>
-          <Input
-            id="time-to"
-            type="time"
-            value={timeTo}
-            onChange={(e) => onTimeToChange(e.target.value)}
-            className="bg-secondary"
-          />
+            <div className="space-y-2">
+              <Label htmlFor="time-to" className="text-sm font-medium text-foreground">
+                Time To
+              </Label>
+              <Input
+                id="time-to"
+                type="time"
+                value={timeTo}
+                onChange={(e) => onTimeToChange(e.target.value)}
+                className="bg-secondary"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>
