@@ -12,6 +12,14 @@ export function DeviceGrid() {
   const [timeFrom, setTimeFrom] = useState<string>("")
   const [timeTo, setTimeTo] = useState<string>("")
 
+  const resetFilters = () => {
+    setSelectedDevice("all")
+    setDateFrom("")
+    setDateTo("")
+    setTimeFrom("")
+    setTimeTo("")
+  }
+
   const filteredDevices = useMemo(() => {
     let filtered = mockDevices
 
@@ -24,70 +32,60 @@ export function DeviceGrid() {
     }
 
     // Filter by date and time range
-    if (dateFrom || timeFrom) {
-      filtered = filtered.filter((device) => {
-        const deviceDate = new Date(device.timestamp)
-        
-        // If we have both date and time, combine them
+    filtered = filtered.filter((device) => {
+      const deviceDate = new Date(device.timestamp)
+      console.log('Checking device:', device.device, 'timestamp:', device.timestamp, 'deviceDate:', deviceDate)
+      
+      // Check FROM filters
+      let passesFrom = true
+      if (dateFrom || timeFrom) {
         if (dateFrom && timeFrom) {
-          const [hours, minutes] = timeFrom.split(':').map(Number)
-          const filterFromDate = new Date(dateFrom)
-          filterFromDate.setHours(hours, minutes, 0, 0)
-          return deviceDate >= filterFromDate
-        }
-        
-        // If we only have date, compare dates (ignore time)
-        if (dateFrom && !timeFrom) {
-          const filterFromDate = new Date(dateFrom)
-          filterFromDate.setHours(0, 0, 0, 0)
-          const deviceDateOnly = new Date(deviceDate)
-          deviceDateOnly.setHours(0, 0, 0, 0)
-          return deviceDateOnly >= filterFromDate
-        }
-        
-        // If we only have time, compare times (ignore date)
-        if (!dateFrom && timeFrom) {
+          // Both date and time specified - create exact datetime
+          const filterFromDate = new Date(dateFrom + 'T' + timeFrom + ':00')
+          console.log('Filter FROM (date+time):', filterFromDate, 'Device:', deviceDate, 'Passes:', deviceDate >= filterFromDate)
+          passesFrom = deviceDate >= filterFromDate
+        } else if (dateFrom) {
+          // Only date specified - check if device date is >= filter date (any time)
+          const filterFromDate = new Date(dateFrom + 'T00:00:00')
+          console.log('Filter FROM (date only):', filterFromDate, 'Device:', deviceDate, 'Passes:', deviceDate >= filterFromDate)
+          passesFrom = deviceDate >= filterFromDate
+        } else if (timeFrom) {
+          // Only time specified - check if device time is >= filter time (any date)
           const [hours, minutes] = timeFrom.split(':').map(Number)
           const deviceTime = deviceDate.getHours() * 60 + deviceDate.getMinutes()
           const filterTime = hours * 60 + minutes
-          return deviceTime >= filterTime
+          console.log('Filter FROM (time only):', filterTime, 'Device:', deviceTime, 'Passes:', deviceTime >= filterTime)
+          passesFrom = deviceTime >= filterTime
         }
-        
-        return true
-      })
-    }
-    
-    if (dateTo || timeTo) {
-      filtered = filtered.filter((device) => {
-        const deviceDate = new Date(device.timestamp)
-        
-        // If we have both date and time, combine them
+      }
+      
+      // Check TO filters
+      let passesTo = true
+      if (dateTo || timeTo) {
         if (dateTo && timeTo) {
-          const [hours, minutes] = timeTo.split(':').map(Number)
-          const filterToDate = new Date(dateTo)
-          filterToDate.setHours(hours, minutes, 59, 999)
-          return deviceDate <= filterToDate
-        }
-        
-        // If we only have date, compare dates (ignore time)
-        if (dateTo && !timeTo) {
-          const filterToDate = new Date(dateTo)
-          filterToDate.setHours(23, 59, 59, 999)
-          return deviceDate <= filterToDate
-        }
-        
-        // If we only have time, compare times (ignore date)
-        if (!dateTo && timeTo) {
+          // Both date and time specified - create exact datetime
+          const filterToDate = new Date(dateTo + 'T' + timeTo + ':59.999')
+          console.log('Filter TO (date+time):', filterToDate, 'Device:', deviceDate, 'Passes:', deviceDate <= filterToDate)
+          passesTo = deviceDate <= filterToDate
+        } else if (dateTo) {
+          // Only date specified - check if device date is <= filter date (any time)
+          const filterToDate = new Date(dateTo + 'T23:59:59.999')
+          console.log('Filter TO (date only):', filterToDate, 'Device:', deviceDate, 'Passes:', deviceDate <= filterToDate)
+          passesTo = deviceDate <= filterToDate
+        } else if (timeTo) {
+          // Only time specified - check if device time is <= filter time (any date)
           const [hours, minutes] = timeTo.split(':').map(Number)
           const deviceTime = deviceDate.getHours() * 60 + deviceDate.getMinutes()
           const filterTime = hours * 60 + minutes
-          return deviceTime <= filterTime
+          console.log('Filter TO (time only):', filterTime, 'Device:', deviceTime, 'Passes:', deviceTime <= filterTime)
+          passesTo = deviceTime <= filterTime
         }
-        
-        return true
-      })
-      console.log('After date/time filter:', filtered.length)
-    }
+      }
+      
+      const passes = passesFrom && passesTo
+      console.log('Final result for device', device.device, ':', passes)
+      return passes
+    })
 
     console.log('Final filtered devices:', filtered.length)
     return filtered
@@ -106,6 +104,7 @@ export function DeviceGrid() {
         onTimeFromChange={setTimeFrom}
         timeTo={timeTo}
         onTimeToChange={setTimeTo}
+        onResetFilters={resetFilters}
         devices={mockDevices}
       />
 

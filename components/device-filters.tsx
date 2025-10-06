@@ -3,6 +3,7 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
 import type { DeviceData } from "@/lib/types"
 
 interface DeviceFiltersProps {
@@ -16,6 +17,7 @@ interface DeviceFiltersProps {
   onTimeFromChange: (value: string) => void
   timeTo: string
   onTimeToChange: (value: string) => void
+  onResetFilters: () => void
   devices: DeviceData[]
 }
 
@@ -30,12 +32,19 @@ export function DeviceFilters({
   onTimeFromChange,
   timeTo,
   onTimeToChange,
+  onResetFilters,
   devices,
 }: DeviceFiltersProps) {
   const uniqueDevices = Array.from(new Set(devices.map((d) => d.device)))
 
   return (
     <div className="rounded-lg border border-border bg-card p-6">
+      <div className="mb-4 flex justify-between items-center">
+        <h3 className="text-lg font-semibold">Filters</h3>
+        <Button onClick={onResetFilters} variant="outline" size="sm">
+          Reset Filters
+        </Button>
+      </div>
       <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="device-select" className="text-sm font-medium text-foreground">
