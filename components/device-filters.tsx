@@ -6,6 +6,70 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import type { DeviceData } from "@/lib/types"
 
+// Utility functions for time conversion
+const convertTo12Hour = (time24: string): { time: string; period: string } => {
+  if (!time24) return { time: '', period: 'AM' }
+  const [hours, minutes] = time24.split(':').map(Number)
+  const period = hours >= 12 ? 'PM' : 'AM'
+  const hours12 = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours
+  return {
+    time: `${hours12.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`,
+    period
+  }
+}
+
+const convertTo24Hour = (time12: string, period: string): string => {
+  if (!time12) return ''
+  const [hours, minutes] = time12.split(':').map(Number)
+  let hours24 = hours
+  if (period === 'AM' && hours === 12) hours24 = 0
+  if (period === 'PM' && hours !== 12) hours24 = hours + 12
+  return `${hours24.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
+}
+
+// Time picker component with AM/PM
+interface TimePickerProps {
+  id: string
+  value: string
+  onChange: (value: string) => void
+  className?: string
+}
+
+function TimePicker({ id, value, onChange, className }: TimePickerProps) {
+  const { time, period } = convertTo12Hour(value)
+  
+  const handleTimeChange = (newTime: string) => {
+    const time24 = convertTo24Hour(newTime, period)
+    onChange(time24)
+  }
+  
+  const handlePeriodChange = (newPeriod: string) => {
+    const time24 = convertTo24Hour(time, newPeriod)
+    onChange(time24)
+  }
+
+  return (
+    <div className="flex gap-2">
+      <Input
+        id={id}
+        type="time"
+        value={time}
+        onChange={(e) => handleTimeChange(e.target.value)}
+        className={`bg-secondary ${className}`}
+      />
+      <Select value={period} onValueChange={handlePeriodChange}>
+        <SelectTrigger className="w-20 bg-secondary">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="AM">AM</SelectItem>
+          <SelectItem value="PM">PM</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  )
+}
+
 interface DeviceFiltersProps {
   selectedDevice: string
   onDeviceChange: (value: string) => void
@@ -84,12 +148,10 @@ export function DeviceFilters({
               <Label htmlFor="time-from" className="text-sm font-medium text-foreground">
                 Time From
               </Label>
-              <Input
+              <TimePicker
                 id="time-from"
-                type="time"
                 value={timeFrom}
-                onChange={(e) => onTimeFromChange(e.target.value)}
-                className="bg-secondary"
+                onChange={onTimeFromChange}
               />
             </div>
           </div>
@@ -112,12 +174,10 @@ export function DeviceFilters({
               <Label htmlFor="time-to" className="text-sm font-medium text-foreground">
                 Time To
               </Label>
-              <Input
+              <TimePicker
                 id="time-to"
-                type="time"
                 value={timeTo}
-                onChange={(e) => onTimeToChange(e.target.value)}
-                className="bg-secondary"
+                onChange={onTimeToChange}
               />
             </div>
           </div>
