@@ -68,7 +68,7 @@ function TimePicker({ id, value, onChange, className }: TimePickerProps) {
     <div className="flex gap-2">
       <div className="flex gap-1">
         <Select value={selectedHour} onValueChange={handleHourChange}>
-          <SelectTrigger className="w-16 bg-secondary">
+          <SelectTrigger className="w-20 bg-secondary">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -83,7 +83,7 @@ function TimePicker({ id, value, onChange, className }: TimePickerProps) {
         <span className="flex items-center text-muted-foreground">:</span>
         
         <Select value={selectedMinute} onValueChange={handleMinuteChange}>
-          <SelectTrigger className="w-16 bg-secondary">
+          <SelectTrigger className="w-20 bg-secondary">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
