@@ -36,7 +36,7 @@ export function DeviceFilters({
 
   return (
     <div className="rounded-lg border border-border bg-card p-6">
-      <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="device-select" className="text-sm font-medium text-foreground">
             Device MAC Address
