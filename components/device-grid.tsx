@@ -46,13 +46,13 @@ export function DeviceGrid() {
       let passesFrom = true
       if (dateFrom || timeFrom) {
         if (dateFrom && timeFrom) {
-          // Both date and time specified - create exact datetime
-          const filterFromDate = new Date(dateFrom + 'T' + timeFrom + ':00')
+          // Both date and time specified - create exact datetime in UTC
+          const filterFromDate = new Date(dateFrom + 'T' + timeFrom + ':00Z')
           console.log('Filter FROM (date+time):', filterFromDate, 'Device:', deviceDate, 'Passes:', deviceDate >= filterFromDate)
           passesFrom = deviceDate >= filterFromDate
         } else if (dateFrom) {
           // Only date specified - check if device date is >= filter date (any time)
-          const filterFromDate = new Date(dateFrom + 'T00:00:00')
+          const filterFromDate = new Date(dateFrom + 'T00:00:00Z')
           console.log('Filter FROM (date only):', filterFromDate, 'Device:', deviceDate, 'Passes:', deviceDate >= filterFromDate)
           passesFrom = deviceDate >= filterFromDate
         } else if (timeFrom) {
@@ -71,13 +71,13 @@ export function DeviceGrid() {
       let passesTo = true
       if (dateTo || timeTo) {
         if (dateTo && timeTo) {
-          // Both date and time specified - create exact datetime
-          const filterToDate = new Date(dateTo + 'T' + timeTo + ':59.999')
+          // Both date and time specified - create exact datetime in UTC
+          const filterToDate = new Date(dateTo + 'T' + timeTo + ':59.999Z')
           console.log('Filter TO (date+time):', filterToDate, 'Device:', deviceDate, 'Passes:', deviceDate <= filterToDate)
           passesTo = deviceDate <= filterToDate
         } else if (dateTo) {
           // Only date specified - check if device date is <= filter date (any time)
-          const filterToDate = new Date(dateTo + 'T23:59:59.999')
+          const filterToDate = new Date(dateTo + 'T23:59:59.999Z')
           console.log('Filter TO (date only):', filterToDate, 'Device:', deviceDate, 'Passes:', deviceDate <= filterToDate)
           passesTo = deviceDate <= filterToDate
         } else if (timeTo) {
