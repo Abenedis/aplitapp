@@ -49,13 +49,13 @@ function TimePicker({ id, value, onChange, className }: TimePickerProps) {
   }
 
   // Generate hours (1-12) and minutes (00-59)
-  const hours = Array.from({ length: 12 }, (_, i) => i + 1)
+  const hours = Array.from({ length: 12 }, (_, i) => (i + 1).toString().padStart(2, '0'))
   const minutes = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'))
   
   const [selectedHour, selectedMinute] = time ? time.split(':') : ['12', '00']
 
   const handleHourChange = (hour: string) => {
-    const newTime = `${hour}:${selectedMinute}`
+    const newTime = `${hour.padStart(2, '0')}:${selectedMinute}`
     handleTimeChange(newTime)
   }
 
@@ -73,8 +73,8 @@ function TimePicker({ id, value, onChange, className }: TimePickerProps) {
           </SelectTrigger>
           <SelectContent>
             {hours.map(hour => (
-              <SelectItem key={hour} value={hour.toString()}>
-                {hour}
+              <SelectItem key={hour} value={hour}>
+                {parseInt(hour)}
               </SelectItem>
             ))}
           </SelectContent>
