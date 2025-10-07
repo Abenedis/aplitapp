@@ -126,7 +126,7 @@ export function DeviceGrid() {
         devices={mockDevices}
       />
 
-      <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-2">
+      <div className="flex flex-col gap-3">
         {filteredDevices.map((device) => (
           <DeviceCard key={`${device.device}-${device.timestamp}`} device={device} />
         ))}
