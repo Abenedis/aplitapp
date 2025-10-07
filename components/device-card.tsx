@@ -15,7 +15,7 @@ export function DeviceCard({ device }: DeviceCardProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   const formatTimestamp = (timestamp: string) => {
-    return new Date(timestamp).toLocaleString("ru-RU", {
+    return new Date(timestamp).toLocaleString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -60,13 +60,13 @@ export function DeviceCard({ device }: DeviceCardProps) {
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">Влажн:</span>
+              <span className="text-xs text-muted-foreground">Humidity:</span>
               <span className="font-mono text-sm font-medium text-foreground">
                 {device.humid.toFixed(1)}%
               </span>
             </div>
             <div className="hidden lg:flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">Обновлено:</span>
+              <span className="text-xs text-muted-foreground">Updated:</span>
               <span className="font-mono text-xs text-muted-foreground">
                 {formatTimestamp(device.timestamp)}
               </span>
@@ -83,12 +83,12 @@ export function DeviceCard({ device }: DeviceCardProps) {
               {isOpen ? (
                 <>
                   <ChevronUp className="h-4 w-4 mr-1" />
-                  Свернуть
+                  Collapse
                 </>
               ) : (
                 <>
                   <ChevronDown className="h-4 w-4 mr-1" />
-                  Подробнее
+                  Details
                 </>
               )}
             </Button>
@@ -118,7 +118,7 @@ export function DeviceCard({ device }: DeviceCardProps) {
             {/* Mobile timestamp */}
             <div className="lg:hidden mt-4 pt-4 border-t border-border/50">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">Последнее обновление</span>
+                <span className="text-xs text-muted-foreground">Last Updated</span>
                 <span className="font-mono text-xs text-muted-foreground">
                   {formatTimestamp(device.timestamp)}
                 </span>
