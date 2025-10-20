@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import type { DeviceData } from "@/lib/types"
+import type { DeviceData, DeviceName } from "@/lib/types"
 
 // Utility functions for time conversion
 const convertTo12Hour = (time24: string): { time: string; period: string } => {
@@ -121,7 +121,9 @@ interface DeviceFiltersProps {
   timeTo: string
   onTimeToChange: (value: string) => void
   onResetFilters: () => void
+  onUpdateNames: () => void
   devices: DeviceData[]
+  deviceNames: Record<string, DeviceName>
 }
 
 export function DeviceFilters({
@@ -136,34 +138,60 @@ export function DeviceFilters({
   timeTo,
   onTimeToChange,
   onResetFilters,
+  onUpdateNames,
   devices,
+  deviceNames,
 }: DeviceFiltersProps) {
   const uniqueDevices = Array.from(new Set(devices.map((d) => d.device)))
 
   return (
-    <div className="rounded-lg border border-border bg-card p-6">
-      <div className="mb-4 flex justify-between items-center">
-        <h3 className="text-lg font-semibold">Filters</h3>
-        <Button onClick={onResetFilters} variant="outline" size="sm">
+    <div className="rounded-2xl border border-gray-200/60 bg-gradient-to-br from-white to-gray-50/30 p-8 shadow-lg backdrop-blur-sm">
+      <div className="mb-6 flex justify-between items-center">
+        <h3 className="text-xl font-light tracking-tight text-gray-900">Filters</h3>
+        <Button 
+          onClick={onResetFilters} 
+          variant="outline" 
+          size="sm"
+          className="h-9 px-4 border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-none"
+        >
           Reset Filters
         </Button>
       </div>
+      <div className="mb-4">
+        <Button 
+          onClick={onUpdateNames} 
+          variant="outline" 
+          size="sm"
+          className="h-9 px-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 text-blue-700 hover:from-blue-100 hover:to-indigo-100 hover:border-blue-300 hover:text-blue-800 shadow-sm hover:shadow-md transition-none"
+        >
+          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          </svg>
+          Update Names
+        </Button>
+      </div>
       <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="device-select" className="text-sm font-medium text-foreground">
+        <div className="space-y-3">
+          <Label htmlFor="device-select" className="text-sm font-medium text-gray-700 tracking-wide">
             Device MAC Address
           </Label>
           <Select value={selectedDevice} onValueChange={onDeviceChange}>
-            <SelectTrigger id="device-select" className="bg-secondary">
+            <SelectTrigger id="device-select" className="h-12 border-gray-200 bg-white/80 backdrop-blur-sm hover:border-gray-300 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
               <SelectValue placeholder="Select device" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Devices</SelectItem>
-              {uniqueDevices.map((device) => (
-                <SelectItem key={device} value={device}>
-                  {device}
-                </SelectItem>
-              ))}
+              {uniqueDevices.map((device) => {
+                const deviceName = deviceNames[device]
+                const displayName = deviceName 
+                  ? `${deviceName.homeName} - ${deviceName.roomName}`
+                  : device
+                return (
+                  <SelectItem key={device} value={device}>
+                    {displayName}
+                  </SelectItem>
+                )
+              })}
             </SelectContent>
           </Select>
         </div>

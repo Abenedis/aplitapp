@@ -15,6 +15,11 @@ export interface Device {
   readings: SensorReading[]
 }
 
+export interface DeviceName {
+  homeName: string
+  roomName: string
+}
+
 // Legacy interface for backward compatibility
 export interface DeviceData {
   device: string
