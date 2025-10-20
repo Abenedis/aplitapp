@@ -55,76 +55,83 @@ export function DeviceCard({ device, deviceName }: DeviceCardProps) {
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <Card className="border border-gray-200/60 bg-gradient-to-br from-white to-gray-50/30 overflow-hidden shadow-lg hover:shadow-xl backdrop-blur-sm">
-        <div className="flex items-center gap-6 p-6">
-          {/* Device Name/MAC Address */}
-          <div className="flex items-center gap-4 min-w-[240px]">
-            <div className="h-3 w-3 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 flex-shrink-0 shadow-sm" />
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="truncate cursor-help">
-                    <div className="font-medium text-base text-gray-900 tracking-tight">
-                      {deviceName ? `${deviceName.homeName} - ${deviceName.roomName}` : device.macAddress}
-                    </div>
-                    {deviceName && (
-                      <div className="font-mono text-xs text-gray-500 mt-1">
-                        {device.macAddress}
+        <div className="p-4 sm:p-6">
+          {/* Top row - Device name and sensor data */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-4">
+            {/* Device Name/MAC Address */}
+            <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1 sm:max-w-[300px]">
+              <div className="h-3 w-3 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 flex-shrink-0 shadow-sm" />
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="truncate cursor-help">
+                      <div className="font-medium text-sm sm:text-base text-gray-900 tracking-tight">
+                        {deviceName ? `${deviceName.homeName} - ${deviceName.roomName}` : device.macAddress}
                       </div>
-                    )}
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent className="bg-gray-900 text-white border-0 shadow-xl">
-                  <p className="font-mono text-sm">MAC Address: {device.macAddress}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+                      {deviceName && (
+                        <div className="font-mono text-xs text-gray-500 mt-1">
+                          {device.macAddress}
+                        </div>
+                      )}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-gray-900 text-white border-0 shadow-xl">
+                    <p className="font-mono text-sm">MAC Address: {device.macAddress}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+
+            {/* Main sensor info - latest reading */}
+            <div className="flex flex-wrap items-center gap-3 sm:gap-6 flex-1 min-w-0">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <span className="text-xs sm:text-sm text-gray-500 font-medium">Temp</span>
+                <span className="font-mono text-sm sm:text-lg font-semibold text-gray-900">
+                  {latestReading.temp.toFixed(1)}°C
+                </span>
+              </div>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <span className="text-xs sm:text-sm text-gray-500 font-medium">Humidity</span>
+                <span className="font-mono text-sm sm:text-lg font-semibold text-gray-900">
+                  {latestReading.humid.toFixed(1)}%
+                </span>
+              </div>
+              <div className="hidden lg:flex items-center gap-3">
+                <span className="text-sm text-gray-500 font-medium">Updated</span>
+                <span className="font-mono text-sm text-gray-600">
+                  {formatTimestamp(latestReading.timestamp)}
+                </span>
+              </div>
+            </div>
           </div>
 
-          {/* Main sensor info - latest reading */}
-          <div className="flex items-center gap-8 flex-1">
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-500 font-medium">Temperature</span>
-              <span className="font-mono text-lg font-semibold text-gray-900">
-                {latestReading.temp.toFixed(1)}°C
-              </span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-500 font-medium">Humidity</span>
-              <span className="font-mono text-lg font-semibold text-gray-900">
-                {latestReading.humid.toFixed(1)}%
-              </span>
-            </div>
-            <div className="hidden lg:flex items-center gap-3">
-              <span className="text-sm text-gray-500 font-medium">Updated</span>
-              <span className="font-mono text-sm text-gray-600">
-                {formatTimestamp(latestReading.timestamp)}
-              </span>
-            </div>
-            <Badge variant="secondary" className="hidden md:inline-flex bg-blue-50 text-blue-700 border-blue-200 font-medium">
+          {/* Bottom row - Badge and Button */}
+          <div className="flex items-center justify-between">
+            <Badge variant="secondary" className="hidden sm:inline-flex bg-blue-50 text-blue-700 border-blue-200 font-medium">
               {device.readings.length} reading{device.readings.length !== 1 ? 's' : ''}
             </Badge>
+            
+            {/* Expand button - always visible */}
+            <CollapsibleTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                className="h-9 sm:h-10 px-3 sm:px-4 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 border border-gray-200 hover:border-gray-300 text-gray-700 hover:text-gray-900 transition-none w-full sm:w-auto"
+              >
+                {isOpen ? (
+                  <>
+                    <ChevronUp className="h-4 w-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Collapse</span>
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="h-4 w-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Details</span>
+                  </>
+                )}
+              </Button>
+            </CollapsibleTrigger>
           </div>
-
-          {/* Expand button */}
-          <CollapsibleTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              className="flex-shrink-0 h-10 px-4 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 border border-gray-200 hover:border-gray-300 text-gray-700 hover:text-gray-900 transition-none"
-            >
-              {isOpen ? (
-                <>
-                  <ChevronUp className="h-4 w-4 mr-2" />
-                  Collapse
-                </>
-              ) : (
-                <>
-                  <ChevronDown className="h-4 w-4 mr-2" />
-                  Details
-                </>
-              )}
-            </Button>
-          </CollapsibleTrigger>
         </div>
 
         <CollapsibleContent>
