@@ -207,6 +207,21 @@ export function DeviceGrid() {
               deviceNames={deviceNames}
             />
 
+        {/* Active devices display */}
+        <div className="flex flex-col gap-4">
+          {filteredDevices.map((device) => (
+            <DeviceCard 
+              key={device.macAddress} 
+              device={device}
+              deviceName={deviceNames[device.macAddress]}
+              onHide={(macAddress) => handleDeviceAction(macAddress, 'hide')}
+              onDelete={(macAddress) => handleDeviceAction(macAddress, 'delete')}
+              showActions={true}
+            />
+          ))}
+        </div>
+
+        {/* Device Management */}
         <DeviceManagement
           devices={devices.map(device => ({
             ...device,
