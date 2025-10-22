@@ -13,6 +13,7 @@ export interface SensorReading {
 export interface Device {
   macAddress: string
   readings: SensorReading[]
+  status?: 'active' | 'hidden' | 'deleted'
 }
 
 export interface DeviceName {

@@ -4,7 +4,9 @@ import { useState, useMemo, useEffect } from "react"
 import { DeviceCard } from "@/components/device-card"
 import { DeviceFilters } from "@/components/device-filters"
 import { UpdateNamesModal } from "@/components/update-names-modal"
-import { devices, mockDevices } from "@/lib/mock-data"
+import { DeviceManagement } from "@/components/device-management"
+import { useMQTTData } from "@/hooks/use-mqtt-api"
+import { devices as mockDevices } from "@/lib/mock-data"
 import type { Device, DeviceName } from "@/lib/types"
 
 export function DeviceGrid() {
@@ -15,6 +17,22 @@ export function DeviceGrid() {
   const [timeTo, setTimeTo] = useState<string>("")
   const [isUpdateNamesModalOpen, setIsUpdateNamesModalOpen] = useState(false)
   const [deviceNames, setDeviceNames] = useState<Record<string, DeviceName>>({})
+  const [useMockData, setUseMockData] = useState(true)
+  const [deviceStatuses, setDeviceStatuses] = useState<Record<string, 'active' | 'hidden' | 'deleted'>>({})
+
+  // Get MQTT data
+  const { devices: mqttDevices, isConnected, lastUpdate, reconnect } = useMQTTData()
+
+  // Use MQTT data if connected, otherwise fall back to mock data
+  const devices = useMemo(() => {
+    if (isConnected && mqttDevices.length > 0) {
+      setUseMockData(false)
+      return mqttDevices
+    } else {
+      setUseMockData(true)
+      return mockDevices
+    }
+  }, [isConnected, mqttDevices])
 
   const resetFilters = () => {
     setSelectedDevice("all")
@@ -40,19 +58,55 @@ export function DeviceGrid() {
     }
   }
 
-  // Load device names from localStorage on component mount
+  const handleDeviceAction = (macAddress: string, action: 'hide' | 'show' | 'delete' | 'restore') => {
+    setDeviceStatuses(prev => {
+      const newStatuses = { ...prev }
+      
+      switch (action) {
+        case 'hide':
+          newStatuses[macAddress] = 'hidden'
+          break
+        case 'show':
+          newStatuses[macAddress] = 'active'
+          break
+        case 'delete':
+          newStatuses[macAddress] = 'deleted'
+          break
+        case 'restore':
+          newStatuses[macAddress] = 'active'
+          break
+      }
+      
+      // Save to localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('deviceStatuses', JSON.stringify(newStatuses))
+      }
+      
+      return newStatuses
+    })
+  }
+
+  // Load device names and statuses from localStorage on component mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedNames = localStorage.getItem('deviceNames')
       if (savedNames) {
         setDeviceNames(JSON.parse(savedNames))
       }
+      
+      const savedStatuses = localStorage.getItem('deviceStatuses')
+      if (savedStatuses) {
+        setDeviceStatuses(JSON.parse(savedStatuses))
+      }
     }
   }, [])
 
   const filteredDevices = useMemo(() => {
-    // Filter devices and their readings
-    let filtered: Device[] = devices
+    // Add status to devices and filter by status
+    let filtered: Device[] = devices.map(device => ({
+      ...device,
+      status: deviceStatuses[device.macAddress] || 'active'
+    })).filter(device => device.status === 'active')
 
     // Filter by device MAC address
     if (selectedDevice !== "all") {
@@ -104,38 +158,63 @@ export function DeviceGrid() {
     // Remove devices with no readings after filtering
     filtered = filtered.filter((device) => device.readings.length > 0)
 
-    return filtered
-  }, [selectedDevice, dateFrom, dateTo, timeFrom, timeTo])
+        return filtered
+      }, [selectedDevice, dateFrom, dateTo, timeFrom, timeTo, devices, deviceStatuses])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100/50">
       <div className="space-y-8 p-6">
-        <DeviceFilters
-          selectedDevice={selectedDevice}
-          onDeviceChange={setSelectedDevice}
-          dateFrom={dateFrom}
-          onDateFromChange={setDateFrom}
-          dateTo={dateTo}
-          onDateToChange={setDateTo}
-          timeFrom={timeFrom}
-          onTimeFromChange={setTimeFrom}
-          timeTo={timeTo}
-          onTimeToChange={setTimeTo}
-          onResetFilters={resetFilters}
-          onUpdateNames={handleUpdateNames}
-          devices={mockDevices}
-          deviceNames={deviceNames}
-        />
-
-        <div className="flex flex-col gap-4">
-          {filteredDevices.map((device) => (
-            <DeviceCard 
-              key={device.macAddress} 
-              device={device} 
-              deviceName={deviceNames[device.macAddress]}
-            />
-          ))}
+        {/* Connection Status */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className={`h-3 w-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
+            <span className="text-sm text-gray-600">
+              {isConnected ? 'Connected to MQTT' : 'Disconnected - Using mock data'}
+            </span>
+            {lastUpdate && (
+              <span className="text-xs text-gray-500">
+                Last update: {lastUpdate.toLocaleTimeString()}
+              </span>
+            )}
+          </div>
+          {!isConnected && (
+            <button
+              onClick={reconnect}
+              className="text-sm text-blue-600 hover:text-blue-800 underline"
+            >
+              Reconnect
+            </button>
+          )}
         </div>
+
+            <DeviceFilters
+              selectedDevice={selectedDevice}
+              onDeviceChange={setSelectedDevice}
+              dateFrom={dateFrom}
+              onDateFromChange={setDateFrom}
+              dateTo={dateTo}
+              onDateToChange={setDateTo}
+              timeFrom={timeFrom}
+              onTimeFromChange={setTimeFrom}
+              timeTo={timeTo}
+              onTimeToChange={setTimeTo}
+              onResetFilters={resetFilters}
+              onUpdateNames={handleUpdateNames}
+              devices={devices.map(device => ({
+                device: device.macAddress,
+                ...device.readings[device.readings.length - 1] || {}
+              }))}
+              deviceNames={deviceNames}
+            />
+
+        <DeviceManagement
+          devices={devices.map(device => ({
+            ...device,
+            status: deviceStatuses[device.macAddress] || 'active'
+          }))}
+          deviceNames={deviceNames}
+          onDeviceAction={handleDeviceAction}
+        />
 
         {filteredDevices.length === 0 && (
           <div className="flex min-h-[400px] items-center justify-center rounded-2xl border border-gray-200/60 bg-gradient-to-br from-white to-gray-50/30 shadow-lg backdrop-blur-sm">

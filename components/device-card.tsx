@@ -6,15 +6,18 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { ChevronDown, ChevronUp } from "lucide-react"
+import { ChevronDown, ChevronUp, EyeOff, Trash2 } from "lucide-react"
 import type { Device, SensorReading, DeviceName } from "@/lib/types"
 
 interface DeviceCardProps {
   device: Device
   deviceName?: DeviceName
+  onHide?: (macAddress: string) => void
+  onDelete?: (macAddress: string) => void
+  showActions?: boolean
 }
 
-export function DeviceCard({ device, deviceName }: DeviceCardProps) {
+export function DeviceCard({ device, deviceName, onHide, onDelete, showActions = true }: DeviceCardProps) {
   const [isOpen, setIsOpen] = useState(false)
   
   // Show the latest reading in collapsed state
@@ -39,9 +42,11 @@ export function DeviceCard({ device, deviceName }: DeviceCardProps) {
   }
 
   const getSensorData = (reading: SensorReading) => [
-    { label: "AC Current", value: reading.ac_current.toString(), key: "ac_current" },
-    { label: "Optical Sensor", value: reading.opt_sensor.toString(), key: "opt_sensor" },
-    { label: "Magnetometer (HULL)", value: reading.hull.toString(), key: "hull" },
+    { label: "Temperature", value: `${reading.temp.toFixed(1)}°C`, key: "temp" },
+    { label: "Humidity", value: `${reading.humid.toFixed(1)}%`, key: "humid" },
+    { label: "AC Current", value: `${reading.ac_current.toFixed(3)} A`, key: "ac_current" },
+    { label: "Optical Sensor", value: reading.opt_sensor.toFixed(2), key: "opt_sensor" },
+    { label: "Magnetometer (HULL)", value: reading.hull.toFixed(3), key: "hull" },
     {
       label: "PIR Sensor",
       value: reading.pir === 1 ? "Active" : "Inactive",
@@ -49,7 +54,7 @@ export function DeviceCard({ device, deviceName }: DeviceCardProps) {
       highlight: reading.pir === 1,
     },
     { label: "GPIO7 (IN2)", value: reading.in2.toString(), key: "in2" },
-    { label: "Distance", value: `${reading.dist} cm`, key: "dist" },
+    { label: "Distance", value: `${reading.dist.toFixed(1)} cm`, key: "dist" },
   ]
 
   return (
@@ -96,6 +101,18 @@ export function DeviceCard({ device, deviceName }: DeviceCardProps) {
                   {latestReading.humid.toFixed(1)}%
                 </span>
               </div>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <span className="text-xs sm:text-sm text-gray-500 font-medium">AC Current</span>
+                <span className="font-mono text-sm sm:text-lg font-semibold text-gray-900">
+                  {latestReading.ac_current.toFixed(2)}A
+                </span>
+              </div>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <span className="text-xs sm:text-sm text-gray-500 font-medium">Distance</span>
+                <span className="font-mono text-sm sm:text-lg font-semibold text-gray-900">
+                  {latestReading.dist.toFixed(0)}cm
+                </span>
+              </div>
               <div className="hidden lg:flex items-center gap-3">
                 <span className="text-sm text-gray-500 font-medium">Updated</span>
                 <span className="font-mono text-sm text-gray-600">
@@ -105,32 +122,58 @@ export function DeviceCard({ device, deviceName }: DeviceCardProps) {
             </div>
           </div>
 
-          {/* Bottom row - Badge and Button */}
+          {/* Bottom row - Badge, Actions and Button */}
           <div className="flex items-center justify-between">
             <Badge variant="secondary" className="hidden sm:inline-flex bg-blue-50 text-blue-700 border-blue-200 font-medium">
               {device.readings.length} reading{device.readings.length !== 1 ? 's' : ''}
             </Badge>
-            
-            {/* Expand button - always visible */}
-            <CollapsibleTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                className="h-9 sm:h-10 px-3 sm:px-4 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 border border-gray-200 hover:border-gray-300 text-gray-700 hover:text-gray-900 transition-none w-full sm:w-auto"
-              >
-                {isOpen ? (
-                  <>
-                    <ChevronUp className="h-4 w-4 mr-1 sm:mr-2" />
-                    <span className="hidden sm:inline">Collapse</span>
-                  </>
-                ) : (
-                  <>
-                    <ChevronDown className="h-4 w-4 mr-1 sm:mr-2" />
-                    <span className="hidden sm:inline">Details</span>
-                  </>
-                )}
-              </Button>
-            </CollapsibleTrigger>
+
+            <div className="flex items-center gap-2">
+              {/* Action buttons */}
+              {showActions && onHide && onDelete && (
+                <div className="flex items-center gap-1">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => onHide(device.macAddress)}
+                    className="h-8 px-2 text-orange-600 border-orange-200 hover:bg-orange-50"
+                    title="Hide device"
+                  >
+                    <EyeOff className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => onDelete(device.macAddress)}
+                    className="h-8 px-2 text-red-600 border-red-200 hover:bg-red-50"
+                    title="Delete device"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+
+              {/* Expand button - always visible */}
+              <CollapsibleTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-9 sm:h-10 px-3 sm:px-4 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 border border-gray-200 hover:border-gray-300 text-gray-700 hover:text-gray-900 transition-none w-full sm:w-auto"
+                >
+                  {isOpen ? (
+                    <>
+                      <ChevronUp className="h-4 w-4 mr-1 sm:mr-2" />
+                      <span className="hidden sm:inline">Collapse</span>
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="h-4 w-4 mr-1 sm:mr-2" />
+                      <span className="hidden sm:inline">Details</span>
+                    </>
+                  )}
+                </Button>
+              </CollapsibleTrigger>
+            </div>
           </div>
         </div>
 
@@ -163,23 +206,23 @@ export function DeviceCard({ device, deviceName }: DeviceCardProps) {
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {getSensorData(reading).map((sensor) => (
-                    <div
-                      key={sensor.key}
-                      className="flex items-center justify-between bg-white/60 backdrop-blur-sm rounded-lg p-3 border border-gray-200/40 hover:bg-white/80"
-                    >
-                      <span className="text-xs font-medium text-gray-600">{sensor.label}</span>
-                      <span
-                        className={`font-mono text-sm font-semibold ${
-                          sensor.highlight ? "text-emerald-600" : "text-gray-900"
-                        }`}
-                      >
-                        {sensor.value}
-                      </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {getSensorData(reading).map((sensor) => (
+                        <div
+                          key={sensor.key}
+                          className="flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-gray-200/40 hover:bg-white/80"
+                        >
+                          <span className="text-xs font-medium text-gray-600 mb-2 text-center">{sensor.label}</span>
+                          <span
+                            className={`font-mono text-lg font-semibold text-center ${
+                              sensor.highlight ? "text-emerald-600" : "text-gray-900"
+                            }`}
+                          >
+                            {sensor.value}
+                          </span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
               </div>
             ))}
           </div>
