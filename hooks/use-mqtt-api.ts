@@ -23,6 +23,9 @@ export function useMQTTData() {
   const [isConnected, setIsConnected] = useState(false)
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
   const [client, setClient] = useState<MqttClient | null>(null)
+  const disableServerPolling =
+    typeof process !== 'undefined' &&
+    (process.env.NEXT_PUBLIC_DISABLE_SERVER_MQTT === 'true' || process.env.DISABLE_SERVER_MQTT === 'true')
 
   // Preferred: connect directly via MQTT over WebSocket in the browser when configured
   useEffect(() => {
@@ -41,6 +44,7 @@ export function useMQTTData() {
           keepalive: 60,
           reconnectPeriod: 5000, // auto reconnect every 5s
           resubscribe: true,
+          connectTimeout: 10000,
         })
 
         setClient(mqttClient)
@@ -115,9 +119,9 @@ export function useMQTTData() {
           }
         })
 
-        mqttClient.on('error', () => { setIsConnected(false); scheduleReconnect() })
-        mqttClient.on('offline', () => { setIsConnected(false); scheduleReconnect() })
-        mqttClient.on('close', () => { setIsConnected(false); scheduleReconnect() })
+        mqttClient.on('error', (err) => { console.error('WS MQTT error:', err?.message || err); setIsConnected(false); scheduleReconnect() })
+        mqttClient.on('offline', () => { console.warn('WS MQTT offline'); setIsConnected(false); scheduleReconnect() })
+        mqttClient.on('close', () => { console.warn('WS MQTT closed'); setIsConnected(false); scheduleReconnect() })
 
         return () => {
           mqttClient.end(true)
@@ -134,6 +138,8 @@ export function useMQTTData() {
   useEffect(() => {
     // If we already have a WS client, skip polling
     if (client) return
+    // On Vercel/serverless polling бессмыслен — TCP к MQTT недоступен
+    if (disableServerPolling) return
 
     const connectToMQTT = async () => {
       try {
@@ -198,7 +204,7 @@ export function useMQTTData() {
     const interval = setInterval(connectToMQTT, 10000)
     
     return () => clearInterval(interval)
-  }, [client])
+  }, [client, disableServerPolling])
 
   const reconnect = useCallback(async () => {
     // Prefer reconnecting WS client if present
