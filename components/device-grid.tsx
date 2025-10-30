@@ -6,7 +6,6 @@ import { DeviceFilters } from "@/components/device-filters"
 import { UpdateNamesModal } from "@/components/update-names-modal"
 import { DeviceManagement } from "@/components/device-management"
 import { useMQTTData } from "@/hooks/use-mqtt-api"
-import { devices as mockDevices } from "@/lib/mock-data"
 import type { Device, DeviceName } from "@/lib/types"
 
 export function DeviceGrid() {
@@ -17,22 +16,15 @@ export function DeviceGrid() {
   const [timeTo, setTimeTo] = useState<string>("")
   const [isUpdateNamesModalOpen, setIsUpdateNamesModalOpen] = useState(false)
   const [deviceNames, setDeviceNames] = useState<Record<string, DeviceName>>({})
-  const [useMockData, setUseMockData] = useState(true)
   const [deviceStatuses, setDeviceStatuses] = useState<Record<string, 'active' | 'hidden' | 'deleted'>>({})
 
   // Get MQTT data
   const { devices: mqttDevices, isConnected, lastUpdate, reconnect } = useMQTTData()
 
-  // Use MQTT data if connected, otherwise fall back to mock data
+  // Use only real MQTT data
   const devices = useMemo(() => {
-    if (isConnected && mqttDevices.length > 0) {
-      setUseMockData(false)
-      return mqttDevices
-    } else {
-      setUseMockData(true)
-      return mockDevices
-    }
-  }, [isConnected, mqttDevices])
+    return mqttDevices
+  }, [mqttDevices])
 
   const resetFilters = () => {
     setSelectedDevice("all")
@@ -234,12 +226,29 @@ export function DeviceGrid() {
         {filteredDevices.length === 0 && (
           <div className="flex min-h-[400px] items-center justify-center rounded-2xl border border-gray-200/60 bg-gradient-to-br from-white to-gray-50/30 shadow-lg backdrop-blur-sm">
             <div className="text-center space-y-3">
-              <div className="w-16 h-16 mx-auto bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.29-1.009-5.824-2.709M15 6.291A7.962 7.962 0 0112 4c-2.34 0-4.29 1.009-5.824 2.709" />
-                </svg>
+              <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${isConnected ? 'bg-green-100' : 'bg-red-100'}`}>
+                {isConnected ? (
+                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                ) : (
+                  <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                )}
               </div>
-              <p className="text-gray-500 font-medium">No devices or readings found matching the filters</p>
+              {isConnected ? (
+                <>
+                  <p className="text-gray-900 font-semibold">Подключено к MQTT брокеру</p>
+                  <p className="text-gray-500 text-sm">Ожидание данных от устройств...</p>
+                  <p className="text-gray-400 text-xs mt-2">Устройства появятся здесь, как только начнут отправлять данные на топики: shibaSensors/#, sensors/#, device/#</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-gray-900 font-semibold">Не подключено к MQTT брокеру</p>
+                  <p className="text-gray-500 text-sm">Проверьте подключение к aplit.tech:1883</p>
+                </>
+              )}
             </div>
           </div>
         )}
