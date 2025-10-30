@@ -1,9 +1,8 @@
-// Client hook for MQTT data via API or WebSocket (for Vercel)
+// Client hook for MQTT data via API
 "use client"
 
 import { useState, useEffect, useCallback } from 'react'
 import type { Device, SensorReading } from '@/lib/types'
-import mqtt, { MqttClient } from 'mqtt'
 
 interface MQTTData {
   macAddress: string
@@ -22,125 +21,9 @@ export function useMQTTData() {
   const [devices, setDevices] = useState<Device[]>([])
   const [isConnected, setIsConnected] = useState(false)
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
-  const [client, setClient] = useState<MqttClient | null>(null)
-  const disableServerPolling =
-    typeof process !== 'undefined' &&
-    (process.env.NEXT_PUBLIC_DISABLE_SERVER_MQTT === 'true' || process.env.DISABLE_SERVER_MQTT === 'true')
 
-  // Preferred: connect directly via MQTT over WebSocket in the browser when configured
+  // Connect to MQTT broker via API
   useEffect(() => {
-    const wsUrl = process.env.NEXT_PUBLIC_MQTT_WS_URL
-    const username = process.env.NEXT_PUBLIC_MQTT_USERNAME
-    const password = process.env.NEXT_PUBLIC_MQTT_PASSWORD
-
-    // If WS URL provided, connect from the browser (works on Vercel)
-    if (typeof window !== 'undefined' && wsUrl) {
-      try {
-        const mqttClient = mqtt.connect(wsUrl, {
-          username,
-          password,
-          protocolVersion: 4,
-          clean: true,
-          keepalive: 60,
-          reconnectPeriod: 5000, // auto reconnect every 5s
-          resubscribe: true,
-          connectTimeout: 10000,
-        })
-
-        setClient(mqttClient)
-
-        mqttClient.on('connect', () => {
-          setIsConnected(true)
-          setLastUpdate(new Date())
-          // Subscribe to topics used by Shiba devices
-          ;['shibaSensors', 'shibaSensors/#', 'sensors/#', 'device/#'].forEach((topic) => {
-            mqttClient.subscribe(topic, { qos: 0 })
-          })
-        })
-
-        // Robust auto-reconnect with exponential backoff capping at 60s
-        let backoffMs = 5000
-        const scheduleReconnect = () => {
-          if (mqttClient.connected) return
-          setTimeout(() => {
-            try { mqttClient.reconnect() } catch { /* noop */ }
-            backoffMs = Math.min(backoffMs * 2, 60000)
-          }, backoffMs)
-        }
-
-        mqttClient.on('message', (topic, payload) => {
-          try {
-            const text = payload.toString()
-            let data: any = {}
-            try {
-              data = JSON.parse(text)
-            } catch {
-              data = { raw: text }
-            }
-
-            // Determine device id (MAC) from payload or topic
-            let mac = data.device || data.macAddress || data.mac_address
-            if (!mac && topic.includes('/')) {
-              const parts = topic.split('/')
-              const last = parts[parts.length - 1]
-              if (last && (/(^[0-9A-Fa-f]{2}:[0-9A-Fa-f]{2}:)/.test(last) || /(^[0-9A-Fa-f]{2}-[0-9A-Fa-f]{2}-)/.test(last))) {
-                mac = last
-              }
-            }
-            if (mac) {
-              mac = String(mac).toUpperCase().replace(/-/g, ':').trim()
-            } else {
-              mac = topic.replace(/\//g, '_')
-            }
-
-            const reading: SensorReading = {
-              temp: data.temp ?? data.temperature ?? 0,
-              humid: data.humid ?? data.humidity ?? 0,
-              ac_current: data.ac_current ?? 0,
-              opt_sensor: data.opt_sensor ?? 0,
-              hull: data.hull ?? 0,
-              pir: data.pir ?? 0,
-              in2: data.in2 ?? 0,
-              dist: data.dist ?? data.distance ?? 0,
-              timestamp: data.timestamp || new Date().toISOString(),
-            }
-
-            setDevices((prev) => {
-              const map = new Map(prev.map((d) => [d.macAddress, d]))
-              const existing = map.get(mac)
-              const readings = existing ? [...existing.readings, reading] : [reading]
-              const trimmed = readings.length > 10 ? readings.slice(-10) : readings
-              map.set(mac, { macAddress: mac, readings: trimmed })
-              return Array.from(map.values())
-            })
-            setLastUpdate(new Date())
-          } catch {
-            // ignore malformed message
-          }
-        })
-
-        mqttClient.on('error', (err) => { console.error('WS MQTT error:', err?.message || err); setIsConnected(false); scheduleReconnect() })
-        mqttClient.on('offline', () => { console.warn('WS MQTT offline'); setIsConnected(false); scheduleReconnect() })
-        mqttClient.on('close', () => { console.warn('WS MQTT closed'); setIsConnected(false); scheduleReconnect() })
-
-        return () => {
-          mqttClient.end(true)
-        }
-      } catch {
-        // fall back to API polling below
-      }
-    }
-
-    return () => {}
-  }, [])
-
-  // Fallback: poll server API (works locally or when a persistent server is available)
-  useEffect(() => {
-    // If we already have a WS client, skip polling
-    if (client) return
-    // On Vercel/serverless polling бессмыслен — TCP к MQTT недоступен
-    if (disableServerPolling) return
-
     const connectToMQTT = async () => {
       try {
         console.log('📡 Connecting to MQTT broker aplit.tech:1883 via API...')
@@ -204,33 +87,34 @@ export function useMQTTData() {
     const interval = setInterval(connectToMQTT, 10000)
     
     return () => clearInterval(interval)
-  }, [client, disableServerPolling])
+  }, [])
 
   const reconnect = useCallback(async () => {
-    // Prefer reconnecting WS client if present
-    if (client) {
-      try {
-        client.reconnect()
-      } catch {}
-      return
-    }
-
+    console.log('🔄 Reconnecting to MQTT broker aplit.tech:1883...')
+    
     try {
       const response = await fetch('/api/mqtt', {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
       })
+      
       const result = await response.json()
+      
       if (result.success) {
+        console.log('✅ Reconnected to MQTT broker aplit.tech:1883')
         setIsConnected(true)
         setLastUpdate(new Date())
       } else {
+        console.error('❌ Reconnection failed:', result.message)
         setIsConnected(false)
       }
-    } catch {
+    } catch (error) {
+      console.error('❌ Reconnection error:', error)
       setIsConnected(false)
     }
-  }, [client])
+  }, [])
 
   return {
     devices,

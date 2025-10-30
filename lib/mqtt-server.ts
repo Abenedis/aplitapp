@@ -12,11 +12,6 @@ interface DeviceData {
 let deviceReadings: { [macAddress: string]: SensorReading[] } = {}
 let mqttClient: mqtt.MqttClient | null = null
 let isConnected = false
-// Allow disabling server-side MQTT (e.g., on Vercel/serverless)
-const DISABLE_SERVER_MQTT =
-  process.env.DISABLE_SERVER_MQTT === 'true' ||
-  process.env.NEXT_PUBLIC_DISABLE_SERVER_MQTT === 'true' ||
-  process.env.VERCEL === '1'
 
 // Subscribe to topics and store data
 const subscribeToTopics = (client: mqtt.MqttClient) => {
@@ -128,12 +123,6 @@ const subscribeToTopics = (client: mqtt.MqttClient) => {
 
 // Connect to MQTT broker
 export const connectMQTT = async (): Promise<boolean> => {
-  if ( DISABLE_SERVER_MQTT ) {
-    if (!isConnected) {
-      console.log('⚙️  Server-side MQTT is disabled by environment. Skipping connection.')
-    }
-    return false
-  }
   return new Promise((resolve) => {
     if (mqttClient && isConnected) {
       console.log('✅ MQTT client already connected to aplit.tech:1883')
@@ -233,8 +222,8 @@ export const disconnectMQTT = () => {
   }
 }
 
-// Initialize connection on module load only in Node.js environment, and when enabled
-if (typeof window === 'undefined' && !DISABLE_SERVER_MQTT) {
+// Initialize connection on module load only in Node.js environment
+if (typeof window === 'undefined') {
   connectMQTT().then(connected => {
     if (connected) {
       console.log('✅ MQTT client initialized successfully')
@@ -242,7 +231,5 @@ if (typeof window === 'undefined' && !DISABLE_SERVER_MQTT) {
       console.log('⚠️  MQTT client could not connect, will retry on first API call')
     }
   })
-} else if (typeof window === 'undefined' && DISABLE_SERVER_MQTT) {
-  console.log('⚙️  Skipping server-side MQTT initialization (disabled).')
 }
 
