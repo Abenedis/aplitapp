@@ -161,7 +161,7 @@ export function DeviceGrid() {
           <div className="flex items-center gap-3">
             <div className={`h-3 w-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
             <span className="text-sm text-gray-600">
-              {isConnected ? 'Connected to MQTT' : 'Disconnected - Using mock data'}
+              {isConnected ? 'Connected to MQTT' : 'Disconnected'}
             </span>
             {lastUpdate && (
               <span className="text-xs text-gray-500">
