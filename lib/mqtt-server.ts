@@ -88,7 +88,8 @@ const subscribeToTopics = (client: mqtt.MqttClient) => {
         pir: data.pir || 0,
         in2: data.in2 || 0,
         dist: data.dist || data.distance || 0,
-        timestamp: data.timestamp || new Date().toISOString()
+        timestamp: data.timestamp || new Date().toISOString(),
+        payload: data
       }
 
       // Add to device readings (keep max 10 readings)

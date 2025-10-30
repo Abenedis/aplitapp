@@ -9,6 +9,11 @@ import { useMQTTData } from "@/hooks/use-mqtt-api"
 import type { Device, DeviceName } from "@/lib/types"
 
 export function DeviceGrid() {
+  const DEFAULT_NAMES: Record<string, DeviceName> = {
+    'F0:F5:BD:89:D1:B8': { homeName: 'Salon', roomName: '' },
+    'F0:F5:BD:89:D1:A0': { homeName: 'Badroom', roomName: '' },
+    'F0:F5:BD:89:D5:18': { homeName: 'Fridge', roomName: '' },
+  }
   const [selectedDevice, setSelectedDevice] = useState<string>("all")
   const [dateFrom, setDateFrom] = useState<string>("")
   const [dateTo, setDateTo] = useState<string>("")
@@ -82,9 +87,17 @@ export function DeviceGrid() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedNames = localStorage.getItem('deviceNames')
-      if (savedNames) {
-        setDeviceNames(JSON.parse(savedNames))
-      }
+      const initial = savedNames ? JSON.parse(savedNames) : {}
+      const merged: Record<string, DeviceName> = { ...initial }
+      // Apply defaults when name is missing или пустой
+      Object.entries(DEFAULT_NAMES).forEach(([mac, def]) => {
+        const current = merged[mac]
+        if (!current || !current.homeName || current.homeName.trim() === '') {
+          merged[mac] = def
+        }
+      })
+      setDeviceNames(merged)
+      localStorage.setItem('deviceNames', JSON.stringify(merged))
       
       const savedStatuses = localStorage.getItem('deviceStatuses')
       if (savedStatuses) {
@@ -92,6 +105,25 @@ export function DeviceGrid() {
       }
     }
   }, [])
+
+  // Ensure defaults are applied when new devices appear
+  useEffect(() => {
+    if (devices.length === 0) return
+    const updated: Record<string, DeviceName> = { ...deviceNames }
+    let changed = false
+    devices.forEach(d => {
+      if (!updated[d.macAddress] && DEFAULT_NAMES[d.macAddress]) {
+        updated[d.macAddress] = DEFAULT_NAMES[d.macAddress]
+        changed = true
+      }
+    })
+    if (changed) {
+      setDeviceNames(updated)
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('deviceNames', JSON.stringify(updated))
+      }
+    }
+  }, [devices])
 
   const filteredDevices = useMemo(() => {
     // Add status to devices and filter by status

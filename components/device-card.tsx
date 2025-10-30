@@ -57,6 +57,21 @@ export function DeviceCard({ device, deviceName, onHide, onDelete, showActions =
     { label: "Distance", value: `${reading.dist.toFixed(1)} cm`, key: "dist" },
   ]
 
+  const getExtraPayloadData = (reading: SensorReading) => {
+    if (!reading.payload) return [] as { label: string; value: string; key: string }[]
+    const standardKeys = new Set([
+      'temp','humid','ac_current','opt_sensor','hull','pir','in2','dist','timestamp','device','macAddress','ver'
+    ])
+    const entries = Object.entries(reading.payload)
+      .filter(([k]) => !standardKeys.has(k))
+      .map(([k, v]) => ({
+        key: `extra_${k}`,
+        label: k,
+        value: typeof v === 'number' ? String(v) : typeof v === 'object' ? JSON.stringify(v) : String(v)
+      }))
+    return entries
+  }
+
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <Card className="border border-gray-200/60 bg-gradient-to-br from-white to-gray-50/30 overflow-hidden shadow-lg hover:shadow-xl backdrop-blur-sm">
@@ -71,7 +86,9 @@ export function DeviceCard({ device, deviceName, onHide, onDelete, showActions =
                   <TooltipTrigger asChild>
                     <div className="truncate cursor-help">
                       <div className="font-medium text-sm sm:text-base text-gray-900 tracking-tight">
-                        {deviceName ? `${deviceName.homeName} - ${deviceName.roomName}` : device.macAddress}
+                        {deviceName
+                          ? [deviceName.homeName, deviceName.roomName].filter(Boolean).join(' - ')
+                          : device.macAddress}
                       </div>
                       {deviceName && (
                         <div className="font-mono text-xs text-gray-500 mt-1">
@@ -223,6 +240,33 @@ export function DeviceCard({ device, deviceName, onHide, onDelete, showActions =
                         </div>
                       ))}
                     </div>
+
+                  {/* Raw payload from broker: show everything that device sent */}
+                  {getExtraPayloadData(reading).length > 0 && (
+                    <>
+                      <div className="mt-6">
+                        <div className="text-sm font-medium text-gray-700 mb-2">Additional fields</div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                          {getExtraPayloadData(reading).map((item) => (
+                            <div key={item.key} className="flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-gray-200/40">
+                              <span className="text-xs font-medium text-gray-600 mb-2 text-center">{item.label}</span>
+                              <span className="font-mono text-sm text-gray-900 break-all text-center">{item.value}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Full raw payload for диагностики */}
+                  {reading.payload && (
+                    <div className="mt-6">
+                      <div className="text-sm font-medium text-gray-700 mb-2">All fields from broker</div>
+                      <pre className="whitespace-pre-wrap break-words bg-gray-50 border border-gray-200 rounded-md p-4 text-xs text-gray-800 overflow-x-auto">
+                        {JSON.stringify(reading.payload, null, 2)}
+                      </pre>
+                    </div>
+                  )}
               </div>
             ))}
           </div>

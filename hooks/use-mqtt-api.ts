@@ -54,7 +54,8 @@ export function useMQTTData() {
                 pir: reading.pir,
                 in2: reading.in2,
                 dist: reading.dist,
-                timestamp: reading.timestamp
+                timestamp: reading.timestamp,
+                payload: reading.payload
               }))
               
               return {

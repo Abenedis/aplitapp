@@ -8,6 +8,8 @@ export interface SensorReading {
   in2: number
   dist: number
   timestamp: string
+  // Raw payload from the broker to display all fields coming from devices
+  payload?: Record<string, unknown>
 }
 
 export interface Device {
